@@ -1,0 +1,54 @@
+# Local development stack. Synthetic data only.
+name: hazina
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hazina
+    ports: ['5432:5432']
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-roles.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d hazina']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ['6379:6379']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: hazina
+      MINIO_ROOT_PASSWORD: hazina-local-only
+    ports: ['9000:9000', '9001:9001']
+    volumes: [miniodata:/data]
+    profiles: [full]
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ['8025:8025', '1025:1025']
+    profiles: [full]
+
+  auth-emulator:
+    image: node:22-alpine
+    working_dir: /emulator
+    command: npx --yes firebase-tools@14 emulators:start --only auth --project demo-hazina
+    volumes: ['./infra/docker/firebase:/emulator']
+    ports: ['9099:9099', '4000:4000']
+    profiles: [full]
+
+volumes:
+  pgdata:
+  miniodata:

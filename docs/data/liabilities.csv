@@ -1,0 +1,2 @@
+name,kind,lender,borrower_entity,currency,principal,annual_rate,term_months,first_payment_month,repayment_type,secured_by_asset,evidence_document
+Example mortgage,mortgage,Example Bank,Owner,UGX,0,0.17,120,2026-11,annuity,Family home,Loan agreement
