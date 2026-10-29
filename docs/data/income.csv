@@ -1,0 +1,2 @@
+name,category,payer,currency,amount_net,frequency,start_month,end_month,escalation_rate,reliability,linked_asset,source
+Example salary,business,Dawin Group,UGX,0,monthly,2026-11,,0,contractual,,manual

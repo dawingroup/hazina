@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    # Unset -> GitHub-hosted. Set the CI_RUNNER variable to a self-hosted label to
+    # move this job off billed minutes, the same lever DawinOS uses.
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hazina
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d hazina" --health-interval 2s --health-timeout 3s --health-retries 30
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    env:
+      DATABASE_URL: postgres://hazina_owner:hazina_owner@localhost:5432/hazina
+      DATABASE_URL_APP: postgres://hazina_app:hazina_app@localhost:5432/hazina
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Create database roles (mirrors docker compose init)
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d hazina -f infra/docker/postgres/init.sql
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm build
+      - run: pnpm typecheck
+      - name: Migrate and seed (synthetic data)
+        run: pnpm db:migrate && pnpm db:seed
+      # One test run per push: domain golden tests, RLS isolation, API against the real database.
+      - run: pnpm test
+
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - run: terraform fmt -check -recursive infra/terraform
+      - name: Validate each environment
+        run: |
+          for env in staging prod; do
+            terraform -chdir=infra/terraform/envs/$env init -backend=false -input=false
+            terraform -chdir=infra/terraform/envs/$env validate
+          done
+
+  # Deploy to staging is added in setup week, after the GCP projects exist and the
+  # Workload Identity Federation outputs are stored as repo variables.

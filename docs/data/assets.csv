@@ -1,0 +1,2 @@
+name,asset_class,owning_entity,currency,liquidity_tier,role,valued_on,value,valuation_method,valuation_source,confidence,maturity_date,yield_rate,pledged_to_liability,evidence_document
+Example current account,cash,Owner,UGX,same_day,matching,2026-10-31,0,market_price,Bank statement,high,,,,

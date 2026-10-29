@@ -1,0 +1,2 @@
+name,category,subcategory,beneficiary,currency,amount,frequency,start_month,end_month,term_months,escalation_rate,certainty,priority,flexibility,evidence_document
+Example school fees,family,education,Child 1,UGX,0,termly,2027-02,2034-12,"2,5,9",0.08,contractual,essential,none,Fee schedule
