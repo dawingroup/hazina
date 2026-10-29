@@ -18,7 +18,8 @@
     "db:seed": "pnpm --filter @hazina/db seed",
     "db:reset": "pnpm --filter @hazina/db reset",
     "stack:up": "docker compose up -d --wait",
-    "stack:down": "docker compose down"
+    "stack:down": "docker compose down",
+    "gate": "bash scripts/ci-gate.sh"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

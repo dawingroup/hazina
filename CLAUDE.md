@@ -7,6 +7,7 @@ Personal wealth data for real families. Treat every change as touching money and
 - `pnpm stack:up` then `set -a && . ./.env && set +a` (local Postgres + Redis)
 - `pnpm db:migrate && pnpm db:seed` (synthetic data only)
 - `pnpm lint && pnpm build && pnpm typecheck && pnpm test` before every push; CI runs the same, once
+- `pnpm gate` runs every CI step on the committed HEAD in a throwaway clone with fresh Postgres and Redis. Use it before merging whenever GitHub Actions is unavailable; never merge on a failed gate. Keep it in step with `.github/workflows/ci.yml`.
 - `pnpm db:reset` refuses any non-local host. Never point local tooling at staging or production.
 
 ## Rules that are not negotiable

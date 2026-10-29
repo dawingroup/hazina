@@ -18,6 +18,19 @@ pnpm test                     # domain golden tests, RLS isolation, API against 
 pnpm dev                      # API :8080 (docs at /docs), worker, web :5173
 ```
 
+## Local CI gate
+
+`pnpm gate` runs the same steps as `.github/workflows/ci.yml`, in order, on the committed `HEAD`. It uses a throwaway clone and fresh Postgres and Redis containers, so it never touches your dev stack or uncommitted work. Use it before merging when GitHub Actions is unavailable.
+
+```bash
+pnpm gate                  # gate HEAD
+pnpm gate -- --ref <ref>   # gate another commit or branch
+pnpm gate -- --fast        # skip the terraform job
+pnpm gate -- --keep        # keep the clone and logs
+```
+
+It needs Docker and pnpm; the terraform job also needs `terraform` on PATH and is reported as SKIP without it. When you change the workflow, change the gate with it.
+
 ## Layout
 
 | Path              | What                                                                                    |
